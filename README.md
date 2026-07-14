@@ -1,8 +1,12 @@
 # DAC 2026 Program Explorer (비공식 / Unofficial)
 
+### 홈페이지 링크: [DAC 2026 Program Explorer](https://2322wednesday.github.io/dac2026_program_search/)
+
 제63회 설계자동화학회(**DAC 2026**, 63rd Design Automation Conference, 2026년 7월 25–31일, 롱비치 컨벤션 센터)의
 프로그램을 키워드·초록·저자로 검색하고 관련 논문을 추천받을 수 있는 **단일 파일 웹앱**입니다.
 [hyeondong.kim/icml26](https://www.hyeondong.kim/icml26/) 스타일을 참고해 만들었습니다.
+
+
 
 ## 파일 구성
 

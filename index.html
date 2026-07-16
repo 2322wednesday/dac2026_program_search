@@ -178,6 +178,8 @@
   .ce-actions{display:flex;gap:8px;margin-top:4px}
   .ce-card{border-color:var(--star)!important}
   .ce-card .ce-note{margin-top:9px;font-size:13px;color:var(--text);opacity:.85;background:var(--panel-2);border:1px solid var(--border-2);border-radius:8px;padding:8px 11px}
+  .act.gcal{border-color:#4285F4;color:#4285F4}
+  .act.gcal:hover{background:#4285F4;color:#fff;border-color:#4285F4}
 
   /* ---------- Empty / info ---------- */
   .empty{text-align:center;padding:60px 20px;color:var(--muted)}
@@ -340,7 +342,7 @@ const I18N = {
     m_authors:"저자", m_session:"세션", m_day:"날짜", m_time:"시간", m_room:"장소", m_track:"트랙", m_type:"유형", m_keywords:"키워드",
     m_related:"관련 논문 추천", m_abstract:"초록(Abstract)", no_abs:"이 논문의 초록은 아직 수집되지 않았습니다. 공식 페이지에서 확인할 수 있습니다.",
     export_ics:"캘린더로 내보내기(.ics)", by:"저자", sim:"관련도", m_coauthor:"같은 저자의 다른 논문", no_related:"내용이 유사한 논문을 찾지 못했습니다.",
-    add_event:"직접 일정 추가", ev_title:"제목", ev_title_ph:"예: NVIDIA Welcome Reception", ev_date:"날짜", ev_start:"시작", ev_end:"종료", ev_room:"장소", ev_room_ph:"예: Exhibit Hall", ev_note:"메모", ev_save:"저장", ev_cancel:"취소", ev_edit:"수정", ev_delete:"삭제", ev_custom:"직접 추가", ev_need_title:"제목을 입력하세요", ev_added:"일정을 추가했습니다", ev_updated:"일정을 수정했습니다",
+    add_event:"직접 일정 추가", ev_title:"제목", ev_title_ph:"예: NVIDIA Welcome Reception", ev_date:"날짜", ev_start:"시작", ev_end:"종료", ev_room:"장소", ev_room_ph:"예: Exhibit Hall", ev_note:"메모", ev_save:"저장", ev_cancel:"취소", ev_edit:"수정", ev_delete:"삭제", ev_custom:"직접 추가", ev_need_title:"제목을 입력하세요", ev_added:"일정을 추가했습니다", ev_updated:"일정을 수정했습니다", gcal_add:"Google 캘린더",
     foot_made:"독립적으로 제작된 커뮤니티용 스케줄 탐색기입니다. DAC/ACM/IEEE와 무관합니다.",
     foot_official:"DAC 2026 공식 프로그램 ↗", foot_export:"내 일정 내보내기(.ics)",
     added:"내 일정에 추가했습니다", removed:"내 일정에서 제거했습니다", plan_empty_toast:"먼저 논문을 담아주세요",
@@ -365,7 +367,7 @@ const I18N = {
     m_authors:"Authors", m_session:"Session", m_day:"Day", m_time:"Time", m_room:"Room", m_track:"Track", m_type:"Type", m_keywords:"Keywords",
     m_related:"Related papers", m_abstract:"Abstract", no_abs:"The abstract for this paper hasn't been collected yet. You can read it on the official page.",
     export_ics:"Export to calendar (.ics)", by:"by", sim:"match", m_coauthor:"By the same authors", no_related:"No content-similar papers found.",
-    add_event:"Add event", ev_title:"Title", ev_title_ph:"e.g. NVIDIA Welcome Reception", ev_date:"Date", ev_start:"Start", ev_end:"End", ev_room:"Location", ev_room_ph:"e.g. Exhibit Hall", ev_note:"Note", ev_save:"Save", ev_cancel:"Cancel", ev_edit:"Edit", ev_delete:"Delete", ev_custom:"Custom", ev_need_title:"Please enter a title", ev_added:"Event added", ev_updated:"Event updated",
+    add_event:"Add event", ev_title:"Title", ev_title_ph:"e.g. NVIDIA Welcome Reception", ev_date:"Date", ev_start:"Start", ev_end:"End", ev_room:"Location", ev_room_ph:"e.g. Exhibit Hall", ev_note:"Note", ev_save:"Save", ev_cancel:"Cancel", ev_edit:"Edit", ev_delete:"Delete", ev_custom:"Custom", ev_need_title:"Please enter a title", ev_added:"Event added", ev_updated:"Event updated", gcal_add:"Google Calendar",
     foot_made:"An independent, community-built schedule explorer. Not affiliated with DAC or ACM/IEEE.",
     foot_official:"Official DAC 2026 Program ↗", foot_export:"Export My Plan (.ics)",
     added:"Added to your plan", removed:"Removed from your plan", plan_empty_toast:"Add some papers first",
@@ -437,6 +439,10 @@ function normDay(d){ // "Monday, July 27" -> {label, date}
 function timeToMin(s){if(!s)return 9999;let m=s.match(/(\d{1,2}):?(\d{2})?\s*(am|pm)/i);if(m){let h=+m[1];const mi=+(m[2]||0);const ap=m[3].toLowerCase();if(ap==="pm"&&h!==12)h+=12;if(ap==="am"&&h===12)h=0;return h*60+mi;}m=s.match(/^(\d{1,2}):(\d{2})$/);if(m)return (+m[1])*60+(+m[2]);return 9999;}
 function to12h(s){const m=(s||"").match(/^(\d{1,2}):(\d{2})/);if(!m)return s||"";let h=+m[1];const mi=m[2];const ap=h<12?"am":"pm";h=h%12||12;return h+":"+mi+ap;}
 const CONF_DAYS=[{date:"2026-07-25",label:"Saturday, July 25"},{date:"2026-07-26",label:"Sunday, July 26"},{date:"2026-07-27",label:"Monday, July 27"},{date:"2026-07-28",label:"Tuesday, July 28"},{date:"2026-07-29",label:"Wednesday, July 29"},{date:"2026-07-30",label:"Thursday, July 30"},{date:"2026-07-31",label:"Friday, July 31"}];
+function gcalDT(dateStr,minutes){const d=(dateStr||"2026-07-27").replace(/-/g,"");const hh=String(Math.floor(minutes/60)).padStart(2,"0"),mm=String(minutes%60).padStart(2,"0");return d+"T"+hh+mm+"00";}
+function gcalUrl(o){let sm=timeToMin(o.start);if(sm===9999)sm=9*60;let em=timeToMin(o.end);if(em===9999)em=sm+(o.ce?60:15);const dates=gcalDT(o.date,sm)+"/"+gcalDT(o.date,em);const q=new URLSearchParams({action:"TEMPLATE",text:o.title||"",dates:dates,details:o.details||"",location:o.room||"Long Beach Convention Center, Long Beach, CA",ctz:"America/Los_Angeles"});return "https://calendar.google.com/calendar/render?"+q.toString();}
+function gcalForPaper(p){return gcalUrl({title:p.title,date:p.date,start:p.start,end:p.end,room:p.room,details:[p.session,(p.authors||[]).join(", "),p.url].filter(Boolean).join(" | ")});}
+function gcalForCe(c){return gcalUrl({title:c.title,date:c.date,start:c.start,end:c.end,room:c.room,details:c.note||"",ce:true});}
 
 /* ---------------- Build indices ---------------- */
 function buildIndices(){
@@ -610,6 +616,7 @@ function paperCard(p,terms){
       ${hasAbs?`<button class="act" data-abs="${esc(p._id)}">${t('show_abs')}</button>`:""}
       <button class="act" data-rel="${esc(p._id)}">◎ ${t('related')}</button>
       <button class="act star ${inPlan?'on':''}" data-star="${esc(p._id)}">${inPlan?'★ '+t('in_plan'):'☆ '+t('add_plan')}</button>
+      <a class="act gcal" href="${esc(gcalForPaper(p))}" target="_blank" rel="noopener">📅 ${t('gcal_add')}</a>
       <a class="act" href="${esc(p.url)}" target="_blank" rel="noopener">${t('official')} ↗</a>
     </div>
   </div>`;
@@ -683,7 +690,7 @@ function ceCard(c){
     <div class="ctop"><h3 style="cursor:default">${esc(c.title)}</h3><span class="track-badge" style="background:var(--star)">${t('ev_custom')}</span></div>
     <div class="meta">${time?`<span>🕑 ${esc(time)}</span>`:""}${c.room?`<span>📍 ${esc(c.room)}</span>`:""}</div>
     ${c.note?`<div class="ce-note">${esc(c.note)}</div>`:""}
-    <div class="card-actions"><button class="act" data-ce-edit="${esc(c._id)}">✎ ${t('ev_edit')}</button><button class="act" data-ce-del="${esc(c._id)}">🗑 ${t('ev_delete')}</button></div>
+    <div class="card-actions"><a class="act gcal" href="${esc(gcalForCe(c))}" target="_blank" rel="noopener">📅 ${t('gcal_add')}</a><button class="act" data-ce-edit="${esc(c._id)}">✎ ${t('ev_edit')}</button><button class="act" data-ce-del="${esc(c._id)}">🗑 ${t('ev_delete')}</button></div>
   </div>`;
 }
 function renderPlan(R){
@@ -764,6 +771,7 @@ function openPaper(id){
       ${kw?`<div class="m-kw">${kw}</div>`:""}
       <div class="m-actions">
         <button class="act star ${inPlan?'on':''}" data-star="${esc(p._id)}">${inPlan?'★ '+t('in_plan'):'☆ '+t('add_plan')}</button>
+        <a class="act gcal" href="${esc(gcalForPaper(p))}" target="_blank" rel="noopener">📅 ${t('gcal_add')}</a>
         <a class="act" href="${esc(p.url)}" target="_blank" rel="noopener">${t('official')} ↗</a>
       </div>
       <div class="rel-title">◎ ${t('m_related')}</div>

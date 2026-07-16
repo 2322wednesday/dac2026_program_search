@@ -1,45 +1,41 @@
-# DAC 2026 Program Explorer (비공식 / Unofficial)
+# DAC 2026 Program Explorer (Unofficial)
 
-### 홈페이지 링크: [DAC 2026 Program Explorer](https://2322wednesday.github.io/dac2026_program_search/)
+A **single-file web app** for searching the program of the 63rd Design Automation Conference (**DAC 2026**, July 25–31, 2026, Long Beach Convention Center) by keyword, abstract, or author, and for discovering related papers.
+The interface was inspired by [hyeondong.kim/icml26](https://www.hyeondong.kim/icml26/).
 
-제63회 설계자동화학회(**DAC 2026**, 63rd Design Automation Conference, 2026년 7월 25–31일, 롱비치 컨벤션 센터)의
-프로그램을 키워드·초록·저자로 검색하고 관련 논문을 추천받을 수 있는 **단일 파일 웹앱**입니다.
-[hyeondong.kim/icml26](https://www.hyeondong.kim/icml26/) 스타일을 참고해 만들었습니다.
+## Files
 
+| File | Description |
+|------|-------------|
+| `index.html` | The complete app in a single file. The dataset is embedded, so you can open it immediately by **double-clicking** the file. |
+| `papers.json` | The paper dataset. When the app is served through a web server and this file is placed in the same directory, the app loads it in preference to the embedded data. |
+| `README.md` | This document. |
 
+## Key Features
 
-## 파일 구성
+- **Keyword search** — Search titles, abstracts, keywords, and authors at once. Supports `All/Title/Abstract/Author/Keyword` scopes, `OR/AND` modes, and exact phrase searches using `"quotation marks"`.
+- **Author search** — Click an author's name, or select the `Author` search scope, to view all papers by that author.
+- **Related-paper recommendations** — Each paper page recommends similar papers using title, abstract, and keyword similarity based on TF-IDF cosine similarity, along with track and co-authorship information.
+- **Schedule and session view** — Browse the program by date and session.
+- **My Plan** — Save papers of interest with the ★ button and export your personal schedule as an `.ics` calendar file.
+- **Track, date, and type filters**, **popular-keyword** chips, **Korean/English switching**, and **light/dark themes**.
 
-| 파일 | 설명 |
-|------|------|
-| `index.html` | 앱 본체(단일 파일). 데이터가 내장돼 있어 **더블클릭만으로** 바로 열립니다. |
-| `papers.json` | 논문 데이터셋. 같은 폴더에 두고 웹서버로 열면 이 파일을 우선 사용합니다. |
-| `README.md` | 이 문서 |
+## Dataset Coverage (Important)
 
-## 주요 기능
+The official DAC 2026 program ([63dac.conference-program.com](https://63dac.conference-program.com/)) loads its listings dynamically with JavaScript, so the complete program cannot be downloaded in a single request.
+To build this dataset, all available session pages (`sess105`–`sess329`) were crawled individually and the complete program was assembled from the actual program data.
 
-- **키워드 검색** — 제목·초록·키워드·저자를 한 번에 검색. `전체/제목/초록/저자/키워드` 범위 선택, `OR/AND` 모드, `"따옴표"` 구문 검색 지원.
-- **저자 검색** — 저자명 클릭 또는 범위를 `저자`로 두고 검색하면 해당 저자의 논문만 모아 봅니다.
-- **관련 논문 추천** — 각 논문 상세에서 제목·초록·키워드(TF‑IDF 코사인 유사도) + 같은 트랙 + 공저자 관계로 유사 논문을 추천합니다.
-- **일정(세션) 보기** — 날짜별·세션별로 프로그램을 펼쳐 봅니다.
-- **내 일정(My Plan)** — ★로 관심 논문을 담고 `.ics`로 캘린더에 내보냅니다.
-- **트랙·날짜·유형 필터**, **인기 키워드** 칩, **한국어/English 전환**, **라이트/다크 테마**.
+- Included items: **1,035** — Research (544), Engineering (283), WIP and Late-Breaking Results (106), plus special sessions, exhibition forums, panels, keynotes, tutorials, workshops, and other events
+- **163 sessions** identified from 225 crawled session pages, **3,951 authors**, and the following tracks: AI/ML, EDA, Design, Security, Systems, Quantum, and Chiplet
+- Search behavior: titles, abstracts, and keywords support partial-word matching. **Author names use phrase matching**; for example, searching for “Seonghan Kwon” returns papers by that author. Acronym matches are ranked behind exact full-term matches when appropriate; for example, “PHAP” prioritizes the corresponding paper.
+- Abstracts: full abstracts are included for **1,021 of 1,035 items**. The remaining 14 are event pages, such as panels, workshops, networking sessions, and PhD forums, for which no original abstract was provided.
+- Related-paper recommendations: content similarity is calculated from titles, abstracts, and keywords using TF-IDF cosine similarity. Papers sharing an author are shown separately under a “More papers by the same author” section.
+- My Plan: dates are displayed as horizontal columns, with each day ordered chronologically. Plans can be exported as an `.ics` file.
+- Note: a small number of official session pages returned 404 errors or contained no content. One very large poster session may also be missing a few items near the end because of page-conversion limitations.
 
-## 데이터 범위 (중요)
+## Extending the App with a Complete Dataset
 
-DAC 2026 공식 프로그램([63dac.conference-program.com](https://63dac.conference-program.com/))은
-자바스크립트로 목록을 불러오기 때문에 전체 목록을 한 번에 내려받을 수 없습니다.
-그래서 전 세션 페이지(sess105–329)를 직접 훑어 **실제 데이터**로 전체 프로그램을 수집했습니다.
-
-- 수록 논문: **1,035편** — 리서치(544) + 엔지니어링(283) + WIP·Late-Breaking(106) + 특별세션/전시포럼/패널/기조/튜토리얼/워크숍 등
-- 세션 **163개**(총 225개 세션 크롤) · 저자 **3,951명** · 트랙: AI/ML, EDA, Design, Security, Systems, Quantum, Chiplet
-- 검색: 제목·초록·키워드는 부분어까지, **저자는 이름 구문 매칭**(예: “Seonghan Kwon” → 해당 저자 논문). 약칭도 전체어 우선 정렬(예: “PHAP” → 해당 논문 우선).
-- 초록: 대표 논문 일부에 전문 포함(그 외는 공식 페이지 링크 제공)
-- 참고: 소수 세션은 공식 페이지가 404/빈 페이지였고, 초대형 포스터 세션 1건은 페이지 변환 한계로 일부 뒤쪽 항목이 누락될 수 있습니다.
-
-## 전체 프로그램으로 확장하기
-
-`papers.json`을 **동일한 스키마**의 전체 데이터로 교체한 뒤 웹서버로 열면 앱이 그대로 확장됩니다.
+Replace `papers.json` with a complete dataset that follows the **same schema**, then serve the app through a web server. The app will automatically use the new dataset.
 
 ```jsonc
 {
@@ -47,14 +43,14 @@ DAC 2026 공식 프로그램([63dac.conference-program.com](https://63dac.confer
   "papers": [
     {
       "id": "RESEARCH976",
-      "title": "논문 제목",
+      "title": "Paper Title",
       "authors": ["Author One", "Author Two"],
-      "author_affil": [{"name": "Author One", "affil": "소속"}],  // 선택
-      "abstract": "초록 전문(선택)",
-      "session": "세션명",
+      "author_affil": [{"name": "Author One", "affil": "Affiliation"}],  // optional
+      "abstract": "Full abstract text (optional)",
+      "session": "Session Name",
       "sess_id": "sess124",
       "type": "research",            // research|panel|keynote|tutorial|workshop|special
-      "track": "AI/ML",              // 비우면 제목/초록에서 자동 분류
+      "track": "AI/ML",              // automatically inferred from the title/abstract if omitted
       "day": "Monday, July 27",
       "date": "2026-07-27",
       "start": "1:30pm", "end": "3:00pm", "room": "Mtg Room 101B",
@@ -64,15 +60,13 @@ DAC 2026 공식 프로그램([63dac.conference-program.com](https://63dac.confer
 }
 ```
 
-`track`, `abstract`, `author_affil`은 비워도 동작합니다(트랙은 자동 추정, 검색·추천은 사용 가능한 필드로 수행).
+The app still works when `track`, `abstract`, or `author_affil` is omitted. Tracks are inferred automatically, while search and recommendation features use whichever fields are available.
 
-## 여는 방법
+## How to Open the App
 
-- **바로 열기**: `index.html` 더블클릭 (데이터 내장, 오프라인 동작)
-- **웹 호스팅**(전체 데이터 확장 시 권장): `index.html`과 `papers.json`을 같은 폴더에 두고 정적 호스팅
-  (GitHub Pages, Netlify 등) 또는 `python3 -m http.server` 로 실행
+- **Open locally**: Double-click `index.html`. The embedded dataset allows the app to run offline.
+- **Host on the web** (recommended when using an expanded dataset): Place `index.html` and `papers.json` in the same directory and deploy them using a static hosting service such as GitHub Pages or Netlify. You can also run a local server with `python3 -m http.server`.
 
-## 고지
+## Disclaimer
 
-DAC / ACM / IEEE 와 무관한 **비공식** 커뮤니티 도구입니다. 논문 제목·초록·저자 등 원문 정보의
-저작권은 각 저자와 학회에 있으며, 정확한 최신 정보는 항상 [공식 프로그램](https://63dac.conference-program.com/)을 확인하세요.
+This is an **unofficial** community tool and is not affiliated with DAC, ACM, or IEEE. Copyright for paper titles, abstracts, author information, and other original materials belongs to the respective authors and conference organizers. Always consult the [official program](https://63dac.conference-program.com/) for the most accurate and up-to-date information.

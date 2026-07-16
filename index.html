@@ -168,6 +168,16 @@
   .plan-col .card{box-shadow:none;border-color:var(--border-2)}
   .plan-col .card:hover{border-color:var(--accent)}
   @media (max-width:640px){ .plan-col{flex-basis:84vw;max-width:84vw} }
+  /* custom event form + card */
+  .ce-form{background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .ce-form label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:800;color:var(--muted);text-transform:none}
+  .ce-form input,.ce-form select{border:1.5px solid var(--border);border-radius:9px;background:var(--panel-2);color:var(--text);padding:9px 10px;font-size:14px;font-family:inherit}
+  .ce-form input:focus,.ce-form select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .ce-row{margin-bottom:10px}
+  .ce-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .ce-actions{display:flex;gap:8px;margin-top:4px}
+  .ce-card{border-color:var(--star)!important}
+  .ce-card .ce-note{margin-top:9px;font-size:13px;color:var(--text);opacity:.85;background:var(--panel-2);border:1px solid var(--border-2);border-radius:8px;padding:8px 11px}
 
   /* ---------- Empty / info ---------- */
   .empty{text-align:center;padding:60px 20px;color:var(--muted)}
@@ -326,10 +336,11 @@ const I18N = {
     count_papers:"편의 논문", found:"검색결과",
     add_plan:"일정 추가", in_plan:"추가됨", related:"관련 논문", official:"공식 페이지", show_abs:"초록 보기", hide_abs:"초록 숨기기",
     empty_title:"검색 결과가 없습니다", empty_sub:"다른 키워드를 시도하거나 필터를 초기화해 보세요.",
-    plan_empty_title:"저장한 논문이 없습니다", plan_empty_sub:"논문 카드의 ★ 버튼으로 관심 논문을 담아보세요.",
+    plan_empty_title:"저장한 일정이 없습니다", plan_empty_sub:"논문 카드의 ★로 관심 논문을 담거나, 위의 ‘직접 일정 추가’로 리셉션·미팅 등 나만의 일정을 넣어보세요.",
     m_authors:"저자", m_session:"세션", m_day:"날짜", m_time:"시간", m_room:"장소", m_track:"트랙", m_type:"유형", m_keywords:"키워드",
     m_related:"관련 논문 추천", m_abstract:"초록(Abstract)", no_abs:"이 논문의 초록은 아직 수집되지 않았습니다. 공식 페이지에서 확인할 수 있습니다.",
     export_ics:"캘린더로 내보내기(.ics)", by:"저자", sim:"관련도", m_coauthor:"같은 저자의 다른 논문", no_related:"내용이 유사한 논문을 찾지 못했습니다.",
+    add_event:"직접 일정 추가", ev_title:"제목", ev_title_ph:"예: NVIDIA Welcome Reception", ev_date:"날짜", ev_start:"시작", ev_end:"종료", ev_room:"장소", ev_room_ph:"예: Exhibit Hall", ev_note:"메모", ev_save:"저장", ev_cancel:"취소", ev_edit:"수정", ev_delete:"삭제", ev_custom:"직접 추가", ev_need_title:"제목을 입력하세요", ev_added:"일정을 추가했습니다", ev_updated:"일정을 수정했습니다",
     foot_made:"독립적으로 제작된 커뮤니티용 스케줄 탐색기입니다. DAC/ACM/IEEE와 무관합니다.",
     foot_official:"DAC 2026 공식 프로그램 ↗", foot_export:"내 일정 내보내기(.ics)",
     added:"내 일정에 추가했습니다", removed:"내 일정에서 제거했습니다", plan_empty_toast:"먼저 논문을 담아주세요",
@@ -350,10 +361,11 @@ const I18N = {
     count_papers:"papers", found:"results",
     add_plan:"Add to plan", in_plan:"In plan", related:"Related", official:"Official page", show_abs:"Show abstract", hide_abs:"Hide abstract",
     empty_title:"No papers match your search", empty_sub:"Try different keywords or reset the filters.",
-    plan_empty_title:"No saved papers yet", plan_empty_sub:"Use the ★ button on any paper to build your agenda.",
+    plan_empty_title:"Nothing saved yet", plan_empty_sub:"Star papers with ★, or use ‘Add event’ above to add receptions, meetings and your own items.",
     m_authors:"Authors", m_session:"Session", m_day:"Day", m_time:"Time", m_room:"Room", m_track:"Track", m_type:"Type", m_keywords:"Keywords",
     m_related:"Related papers", m_abstract:"Abstract", no_abs:"The abstract for this paper hasn't been collected yet. You can read it on the official page.",
     export_ics:"Export to calendar (.ics)", by:"by", sim:"match", m_coauthor:"By the same authors", no_related:"No content-similar papers found.",
+    add_event:"Add event", ev_title:"Title", ev_title_ph:"e.g. NVIDIA Welcome Reception", ev_date:"Date", ev_start:"Start", ev_end:"End", ev_room:"Location", ev_room_ph:"e.g. Exhibit Hall", ev_note:"Note", ev_save:"Save", ev_cancel:"Cancel", ev_edit:"Edit", ev_delete:"Delete", ev_custom:"Custom", ev_need_title:"Please enter a title", ev_added:"Event added", ev_updated:"Event updated",
     foot_made:"An independent, community-built schedule explorer. Not affiliated with DAC or ACM/IEEE.",
     foot_official:"Official DAC 2026 Program ↗", foot_export:"Export My Plan (.ics)",
     added:"Added to your plan", removed:"Removed from your plan", plan_empty_toast:"Add some papers first",
@@ -386,7 +398,7 @@ const STOP = new Set(("a an and the of for to in on with without via using use b
 let DATA={meta:{},papers:[]};
 let PAPERS=[], SESSIONS=[], AUTHORS=new Map(), DAYS=[], DF=new Map(), N_DOCS=0, POP_KW=[];
 const state={lang:"ko",theme:"light",tab:"papers",q:"",scope:"all",mode:"OR",sort:"relevance",
-  tracks:new Set(),days:new Set(),types:new Set(),absOnly:false,plan:new Set()};
+  tracks:new Set(),days:new Set(),types:new Set(),absOnly:false,plan:new Set(),customEvents:[]};
 
 /* ---------------- Safe storage ---------------- */
 const store={
@@ -422,7 +434,9 @@ function normDay(d){ // "Monday, July 27" -> {label, date}
   const mm=months[m[2]]||"07";const dd=String(m[3]).padStart(2,"0");
   return{label:`${m[1]}, ${m[2]} ${m[3]}`, date:`2026-${mm}-${dd}`};
 }
-function timeToMin(s){if(!s)return 9999;const m=s.match(/(\d{1,2}):?(\d{2})?\s*(am|pm)/i);if(!m)return 9999;let h=+m[1];const mi=+(m[2]||0);const ap=(m[3]||"").toLowerCase();if(ap==="pm"&&h!==12)h+=12;if(ap==="am"&&h===12)h=0;return h*60+mi;}
+function timeToMin(s){if(!s)return 9999;let m=s.match(/(\d{1,2}):?(\d{2})?\s*(am|pm)/i);if(m){let h=+m[1];const mi=+(m[2]||0);const ap=m[3].toLowerCase();if(ap==="pm"&&h!==12)h+=12;if(ap==="am"&&h===12)h=0;return h*60+mi;}m=s.match(/^(\d{1,2}):(\d{2})$/);if(m)return (+m[1])*60+(+m[2]);return 9999;}
+function to12h(s){const m=(s||"").match(/^(\d{1,2}):(\d{2})/);if(!m)return s||"";let h=+m[1];const mi=m[2];const ap=h<12?"am":"pm";h=h%12||12;return h+":"+mi+ap;}
+const CONF_DAYS=[{date:"2026-07-25",label:"Saturday, July 25"},{date:"2026-07-26",label:"Sunday, July 26"},{date:"2026-07-27",label:"Monday, July 27"},{date:"2026-07-28",label:"Tuesday, July 28"},{date:"2026-07-29",label:"Wednesday, July 29"},{date:"2026-07-30",label:"Thursday, July 30"},{date:"2026-07-31",label:"Friday, July 31"}];
 
 /* ---------------- Build indices ---------------- */
 function buildIndices(){
@@ -647,25 +661,76 @@ function sessCard(s){
     }).join("")}</div>
   </div>`;
 }
-function renderPlan(R){
-  const items=PAPERS.filter(p=>state.plan.has(p._id));
-  if(!items.length){R.innerHTML=emptyBox(t('plan_empty_title'),t('plan_empty_sub'));return;}
-  const head=`<div class="result-head"><div class="count"><b>${items.length}</b> ${t('tab_plan')}</div>
-    <button class="act" id="exportPlan2">📅 ${t('export_ics')}</button></div>`;
-  // group by day, chronological; time-ordered within each day (TBD last)
-  const days={};
-  items.forEach(p=>{(days[p.dayLabel]=days[p.dayLabel]||[]).push(p);});
-  const dayKeys=Object.keys(days).sort((a,b)=>{
-    const da=(days[a][0]||{}).date||"9999-99-99", db=(days[b][0]||{}).date||"9999-99-99";
-    return da<db?-1:da>db?1:0;
-  });
-  const body=`<div class="plan-week">`+dayKeys.map(dk=>{
-    const ps=days[dk].slice().sort((a,b)=>a._min-b._min);
-    return `<div class="plan-col"><div class="plan-col-h">${esc(dk)} <span class="dcount">${ps.length}</span></div>
-      ${ps.map(p=>paperCard(p,[])).join("")}</div>`;
-  }).join("")+`</div>`;
-  R.innerHTML=head+body;
+function ceFormHtml(){
+  const dayOpts=CONF_DAYS.map(d=>`<option value="${d.date}">${esc(d.label)}</option>`).join("");
+  return `<div class="ce-form" id="ceForm" data-edit="" style="display:none">
+    <div class="ce-row"><label>${t('ev_title')} *<input id="ceTitle" type="text" placeholder="${esc(t('ev_title_ph'))}"></label></div>
+    <div class="ce-row ce-grid">
+      <label>${t('ev_date')}<select id="ceDate">${dayOpts}</select></label>
+      <label>${t('ev_start')}<input id="ceStart" type="time"></label>
+      <label>${t('ev_end')}<input id="ceEnd" type="time"></label>
+    </div>
+    <div class="ce-row ce-grid">
+      <label>${t('ev_room')}<input id="ceRoom" type="text" placeholder="${esc(t('ev_room_ph'))}"></label>
+      <label>${t('ev_note')}<input id="ceNote" type="text"></label>
+    </div>
+    <div class="ce-actions"><button class="btn btn-primary" id="ceSave">${t('ev_save')}</button><button class="btn btn-ghost" id="ceCancel">${t('ev_cancel')}</button></div>
+  </div>`;
 }
+function ceCard(c){
+  const time=c.start?to12h(c.start)+(c.end?"–"+to12h(c.end):""):"";
+  return `<div class="card ce-card">
+    <div class="ctop"><h3 style="cursor:default">${esc(c.title)}</h3><span class="track-badge" style="background:var(--star)">${t('ev_custom')}</span></div>
+    <div class="meta">${time?`<span>🕑 ${esc(time)}</span>`:""}${c.room?`<span>📍 ${esc(c.room)}</span>`:""}</div>
+    ${c.note?`<div class="ce-note">${esc(c.note)}</div>`:""}
+    <div class="card-actions"><button class="act" data-ce-edit="${esc(c._id)}">✎ ${t('ev_edit')}</button><button class="act" data-ce-del="${esc(c._id)}">🗑 ${t('ev_delete')}</button></div>
+  </div>`;
+}
+function renderPlan(R){
+  const papers=PAPERS.filter(p=>state.plan.has(p._id));
+  const ces=(state.customEvents||[]);
+  const total=papers.length+ces.length;
+  const head=`<div class="result-head"><div class="count"><b>${total}</b> ${t('tab_plan')}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="act" id="addEventBtn">＋ ${t('add_event')}</button>
+    <button class="act" id="exportPlan2">📅 ${t('export_ics')}</button></div></div>`;
+  const form=ceFormHtml();
+  if(!total){R.innerHTML=head+form+emptyBox(t('plan_empty_title'),t('plan_empty_sub'));return;}
+  // group papers + custom events by day, sort by time within each day
+  const days={};
+  papers.forEach(p=>{(days[p.dayLabel]=days[p.dayLabel]||[]).push({k:'p',o:p,m:p._min,date:p.date});});
+  ces.forEach(c=>{const nd=normDay(c.dayLabel||c.date);(days[nd.label]=days[nd.label]||[]).push({k:'c',o:c,m:timeToMin(c.start),date:c.date||nd.date});});
+  const dayKeys=Object.keys(days).sort((a,b)=>{const da=(days[a][0]||{}).date||"9999-99-99",db=(days[b][0]||{}).date||"9999-99-99";return da<db?-1:da>db?1:0;});
+  const body=`<div class="plan-week">`+dayKeys.map(dk=>{
+    const arr=days[dk].slice().sort((a,b)=>a.m-b.m);
+    return `<div class="plan-col"><div class="plan-col-h">${esc(dk)} <span class="dcount">${arr.length}</span></div>
+      ${arr.map(it=>it.k==='p'?paperCard(it.o,[]):ceCard(it.o)).join("")}</div>`;
+  }).join("")+`</div>`;
+  R.innerHTML=head+form+body;
+}
+function openCeForm(id){
+  const f=$("#ceForm");if(!f)return;
+  const ev=id?(state.customEvents||[]).find(c=>c._id===id):null;
+  f.setAttribute("data-edit",ev?ev._id:"");
+  $("#ceTitle").value=ev?ev.title:"";
+  $("#ceDate").value=ev?ev.date:"2026-07-26";
+  $("#ceStart").value=ev?(ev.start||""):"";
+  $("#ceEnd").value=ev?(ev.end||""):"";
+  $("#ceRoom").value=ev?(ev.room||""):"";
+  $("#ceNote").value=ev?(ev.note||""):"";
+  f.style.display="block";$("#ceTitle").focus();f.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function saveCe(){
+  const title=$("#ceTitle").value.trim();
+  if(!title){toast(t('ev_need_title'));$("#ceTitle").focus();return;}
+  const date=$("#ceDate").value;const cd=CONF_DAYS.find(d=>d.date===date)||CONF_DAYS[1];
+  const ev={title,date:cd.date,dayLabel:cd.label,start:$("#ceStart").value,end:$("#ceEnd").value,room:$("#ceRoom").value.trim(),note:$("#ceNote").value.trim()};
+  if(!state.customEvents)state.customEvents=[];
+  const editId=$("#ceForm").getAttribute("data-edit");
+  if(editId){const i=state.customEvents.findIndex(c=>c._id===editId);if(i>=0){ev._id=editId;state.customEvents[i]=ev;}toast(t('ev_updated'));}
+  else{ev._id="ce_"+Date.now()+"_"+Math.floor(Math.random()*1e4);state.customEvents.push(ev);toast(t('ev_added'));}
+  store.set("dac_custom",state.customEvents);render();
+}
+function delCe(id){state.customEvents=(state.customEvents||[]).filter(c=>c._id!==id);store.set("dac_custom",state.customEvents);toast(t('removed'));render();}
 function emptyBox(title,sub){return `<div class="empty">
   <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
   <h3>${esc(title)}</h3><div>${esc(sub)}</div></div>`;}
@@ -746,8 +811,10 @@ function icsFor(items){
 function icsEsc(s){return String(s||"").replace(/([,;\\])/g,"\\$1").replace(/\n/g," ");}
 function exportPlan(){
   const items=PAPERS.filter(p=>state.plan.has(p._id));
-  if(!items.length){toast(t('plan_empty_toast'));return;}
-  const blob=new Blob([icsFor(items)],{type:"text/calendar"});
+  const ces=(state.customEvents||[]).map(c=>({_id:c._id,title:c.title,date:c.date,start:c.start,end:c.end,room:c.room,session:"(My Plan)",authors:[],url:""}));
+  const all=items.concat(ces);
+  if(!all.length){toast(t('plan_empty_toast'));return;}
+  const blob=new Blob([icsFor(all)],{type:"text/calendar"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="dac2026-my-plan.ics";a.click();
 }
 
@@ -779,11 +846,11 @@ function updateStatsAndTabs(){
     [PAPERS.length.toLocaleString(),t('st_papers')],
     [SESSIONS.length,t('st_sessions')],
     [AUTHORS.size.toLocaleString(),t('st_authors')],
-    [state.plan.size,t('st_plan')]
+    [state.plan.size+((state.customEvents||[]).length),t('st_plan')]
   ].map(([b,s])=>`<div class="stat"><b>${b}</b><span>${esc(s)}</span></div>`).join("");
   $("#cntPapers").textContent=PAPERS.length;
   $("#cntSessions").textContent=SESSIONS.length;
-  $("#cntPlan").textContent=state.plan.size;
+  $("#cntPlan").textContent=state.plan.size+((state.customEvents||[]).length);
   const days=DAYS.length||1;
   $("#covNote").textContent=I18N[state.lang].cov(PAPERS.length,SESSIONS.length,days);
 }
@@ -839,6 +906,11 @@ function wire(){
     const dy=e.target.closest("[data-day]");if(dy){toggleSet(state.days,dy.getAttribute("data-day"));render();return;}
     const ty=e.target.closest("[data-type]");if(ty){toggleSet(state.types,ty.getAttribute("data-type"));render();return;}
     const tg=e.target.closest("[data-toggle]");if(tg){const c=e.target.closest(".sess-card");if(c)c.classList.toggle("open");return;}
+    if(e.target.closest("#addEventBtn")){openCeForm(null);return;}
+    if(e.target.closest("#ceCancel")){const f=$("#ceForm");if(f)f.style.display="none";return;}
+    if(e.target.closest("#ceSave")){saveCe();return;}
+    const ceE=e.target.closest("[data-ce-edit]");if(ceE){openCeForm(ceE.getAttribute("data-ce-edit"));return;}
+    const ceD=e.target.closest("[data-ce-del]");if(ceD){delCe(ceD.getAttribute("data-ce-del"));return;}
     if(e.target.id==="exportPlan"||e.target.id==="exportPlan2"){e.preventDefault();exportPlan();return;}
     if(e.target.id==="mClose"||e.target===$("#modalBg")){closeModal();return;}
   });
@@ -854,6 +926,7 @@ async function boot(){
   state.lang=store.get("dac_lang","ko");
   state.theme=store.get("dac_theme","light");
   state.plan=new Set(store.get("dac_plan",[]));
+  state.customEvents=store.get("dac_custom",[]);
   applyTheme();
   // load data: try external papers.json, fall back to embedded
   try{
